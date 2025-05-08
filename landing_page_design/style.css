@@ -1,0 +1,189 @@
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans&display=swap');
+body{
+    background-color: #010302;
+    margin :0;
+    font-family: 'Josefin Sans', sans-serif;    font-size: 15px;
+    overflow-x: hidden;
+}
+
+*::-webkit-scrollbar{
+    width: 0;
+}
+.container{
+    overflow: hidden;
+    height: max-content;
+
+}
+.banner{
+    height: 50vw;
+    position: relative;
+    overflow: hidden;
+}
+.banner .bg{
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background-size: 100%;
+    background-position: center bottom;
+    transition: 0.1s;
+}
+
+.banner .bg:nth-child(1){
+    background-image: url(https://res.cloudinary.com/da9k32mdb/image/upload/v1746611969/FOND.png);
+}
+.banner .bg:nth-child(2){
+    background-image: url(./images/left.png);
+}
+.banner .bg:nth-child(3){
+    top: 32%;
+    text-align: center;
+    z-index: 2;
+} 
+.banner .bg:nth-child(3) h1, 
+.banner .bg:nth-child(3) h5
+{
+    color: #d1c3ae;
+    font-size: 35px;
+    margin: 0;
+    text-shadow: 0 0px 20px #d2af76;
+}
+.banner .bg:nth-child(3) h1
+{
+    font-size: 7em;
+}
+.banner .bg:nth-child(4){
+    background-image: url(./images/right.png);
+}
+
+/* .banner .bg:nth-child(5){
+    background-image: url(images/banner_3.png);
+    transform: translateY(50%);
+} */
+.tab{
+    min-height: 100vh;
+    background-color: #010302;
+    z-index: 1;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+}
+.tab::before{
+    position: absolute;
+    height: 200px;
+    width: 100vw;
+    background: linear-gradient(
+        to top, #010302, transparent
+    );
+    content: '';
+    bottom: 100%;
+    left: 0;
+}
+.tab.tab1{
+    background:linear-gradient(
+        to top, #010302 0%, transparent 20% , #010302 80%
+   ),url(images/tab1.jpg);
+}
+.tab.tab1 h2{
+    font-size: 5em;
+}
+.tab.tab2{
+    background:linear-gradient(
+        to top, #010302 0%, transparent 20% , #010302 80%
+   ),url(images/tab2.jpg);
+}
+.tab.tab1 .content{
+    width: 1000px;
+    max-width: 90%;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.tab.tab2 .content{
+    color: #eee;
+    width: 900px;
+    max-width: 90%;
+}
+.tab.tab2 .content .des{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.content h2 {
+    font-size: 5em;
+    color: #d1c3ae;
+    text-shadow: 0 0px 20px #d2af76;
+}
+.des p {
+    font-size: 2em;
+    color: #fff;
+}
+.slider-container {
+    position: fixed;
+    top: 50%;
+    right: 50px;
+    transform: translateY(-50%);
+    height: 300px;
+    z-index: 10;
+  }
+
+  #timeline-slider {
+    writing-mode: vertical-lr;
+    -webkit-appearance: slider-vertical;
+    width: 10px;
+    height: 100%;
+    background: transparent;
+  }
+
+  .image-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .slide {
+    position: absolute;
+    max-width: 40%; /* ajuste selon besoin */
+    height: auto;
+    opacity: 0; /* Caché par défaut */
+    transform: scale(0); /* Réduit à 0 par défaut */
+    transition: opacity 0.6s ease, transform 0.6s ease, top 0.6s ease, left 0.6s ease; /* Ajout transition top/left */
+    z-index: 0;
+    pointer-events: none;
+    /* Supprimer left/bottom ici, sera géré par active/inactive */
+  }
+
+  .slide.active {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(var(--angle)); /* Transform pour l'image active */
+    left: var(--left); /* Positionnement dynamique */
+    bottom: var(--bottom); /* Positionnement dynamique */
+    top: auto; /* Assurer que top n'interfère pas */
+    z-index: 2; /* Au-dessus des inactives */
+    pointer-events: auto;
+  }
+
+  .slide.inactive {
+    opacity: 1; /* Légèrement plus transparent */
+    transform: scale(1); /* Légèrement plus petit */
+    max-width: 100%; /* Réduire la largeur maximale pour les inactives */
+    /* Positionnement dans le coin supérieur gauche par défaut, sera ajusté par JS */
+    top: 20px;
+    left: 20px;
+    bottom: auto; /* Assurer que bottom n'interfère pas */
+    z-index: 1; /* Derrière l'active, mais visible */
+    pointer-events: none;
+  }
