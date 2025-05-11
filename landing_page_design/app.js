@@ -1,128 +1,157 @@
-let listBg = document.querySelectorAll('.bg');
-let banner = document.querySelector('.banner');
-let tabs = document.querySelectorAll('.tab');
-let container = document.querySelector('.container');
-let heightDefault = container.offsetHeight;
-let topBefore = 0;
-let body = document.querySelector('body');
+let listBg = document.querySelectorAll(".banner .bg"); // Changed selector to target only banner backgrounds
+let banner = document.querySelector(".banner");
+let tabs = document.querySelectorAll(".tab");
+let container = document.querySelector(".container");
+let body = document.querySelector("body");
 
-window.addEventListener('wheel', function(event){
+// Function to handle banner parallax
+function handleBannerParallax() {
+  listBg.forEach((bgLayer) => {
+    let speed = parseFloat(bgLayer.dataset.speed) || 0;
+    let movement = currentScrollY * speed; // Changed from scrollY to currentScrollY
+    bgLayer.style.transform = `translateY(${movement}px)`;
+  });
+}
+
+// --- Smooth Scrolling Implementation ---
+let currentScrollY = window.scrollY;
+let targetScrollY = window.scrollY;
+const scrollLerpFactor = 0.075; // Lower = smoother, but less responsive. Default: 0.1
+const scrollSensitivity = 0.5; // Adjust how much one wheel tick scrolls. Default: 0.5
+
+window.addEventListener(
+  "wheel",
+  function (event) {
     event.preventDefault();
-    const scrollSpeed = 0.2;
-    const scrollValue = window.scrollY + (event.deltaY/3) * scrollSpeed;
-    window.scrollTo(0, scrollValue);
+    targetScrollY += event.deltaY * scrollSensitivity;
 
+    // Clamp targetScrollY to prevent overscrolling
+    const maxScroll =
+      document.documentElement.scrollHeight - window.innerHeight;
+    targetScrollY = Math.max(0, Math.min(targetScrollY, maxScroll));
+  },
+  { passive: false }
+);
 
+// Listener for scrollbar interactions or other non-wheel scroll events
+window.addEventListener("scroll", () => {
+  // If the scroll was likely caused by user dragging scrollbar or other means
+  // (i.e., window.scrollY is significantly different from our lerped currentScrollY)
+  if (Math.abs(window.scrollY - currentScrollY) > 1) {
+    targetScrollY = window.scrollY;
+    currentScrollY = window.scrollY; // Snap to the new position
+  }
+});
 
-    let top = scrollValue;
-    listBg.forEach((bg, index) => {
-        if(index != 0){
-            bg.animate({
-                transform: `translateY(${(-top*index)}px)`
-            }, { duration: 1000, fill: "forwards" });
-        }
-        if(index == listBg.length - 1){
-            tabs.forEach(tab => {
-                tab.animate({
-                    transform: `translateY(${(-top*index)}px)`
-                }, { duration: 500, fill: "forwards" });
-            })
+function smoothScrollLoop() {
+  let diff = targetScrollY - currentScrollY;
 
-            if(topBefore < top){
-                setHeight = heightDefault-window.scrollY*index;
-                container.animate({
-                    height: `${(setHeight + 100)}px`
-                }, { duration: 50, fill: "forwards" });
-                topBefore = window.scrollY;
-            }
-        }
-        tabs.forEach((tab, index) => {
-            // console.log(tab.offsetTop - top, window.innerHeight);
-            if((tab.offsetTop - top) <= window.innerHeight*(index+1)){
-                let content = tab.getElementsByClassName('content')[0];
-                let transformContent = window.innerHeight*(index+1) - (tab.offsetTop - top);
-                console.log(tab);
-                content.animate({
-                    transform: `translateY(${(-transformContent + (100*index))}px)`
-                }, { duration: 500, fill: "forwards" });
-            }
-        })
-    })
-}, { passive: false });
-const slider = document.getElementById("timeline-slider");
-      const slides = document.querySelectorAll(".slide");
+  // If the difference is small enough, snap to target and reduce processing
+  if (Math.abs(diff) < 0.5) {
+    currentScrollY = targetScrollY;
+  } else {
+    currentScrollY += diff * scrollLerpFactor;
+  }
 
-      // Définir différentes positions et rotations pour chaque image
-      const positions = [
-        { left: "10%", bottom: "10%", angle: "-5deg" },
-        { left: "60%", bottom: "15%", angle: "8deg" },
-        { left: "30%", bottom: "5%", angle: "-10deg" },
-        { left: "50%", bottom: "20%", angle: "5deg" },
-        { left: "20%", bottom: "25%", angle: "-8deg" },
-        
-      ];
-      // Initialiser la première diapositive comme active
-      function initializeSlider() {
-        const initialIndex = parseInt(slider.value);
-        slides.forEach((slide, i) => {
-          slide.classList.remove("active", "inactive");
-          if (i === initialIndex) {
-            slide.style.setProperty("--left", positions[i].left);
-            slide.style.setProperty("--bottom", positions[i].bottom);
-            slide.style.setProperty("--angle", positions[i].angle);
-            slide.classList.add("active");
-          }
-          // Les autres restent cachées par défaut
-        });
+  window.scrollTo(0, currentScrollY);
+  handleBannerParallax(); // Update banner parallax
+
+  requestAnimationFrame(smoothScrollLoop);
+}
+// --- End of Smooth Scrolling Implementation ---
+
+// Start the smooth scroll loop
+smoothScrollLoop();
+
+const elementsToAnimateOnScroll = document.querySelectorAll(
+  ".tab.tab3 .dual-image-container, " +
+    ".tab.tab7 .image-text-container, " +
+    ".tab.tab9, " + // Added .tab.tab9
+    ".tab.tab10 .image-text-container, " +
+    ".tab.tab12, " +
+    ".tab.tab13, " +
+    ".tab.tab15, " +
+    ".tab.tab16, " +
+    ".tab.tab18 .content-s1, " +
+    ".tab.tab18 .content-s2, " +
+    ".tab.tab18 .content-s3"
+);
+
+const observerOptions = {
+  root: null,
+  rootMargin: "0px",
+  threshold: 0.2,
+};
+
+const observerCallback = (entries, observer) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("is-visible");
+      observer.unobserve(entry.target);
+    }
+  });
+};
+
+const animationObserver = new IntersectionObserver(
+  observerCallback,
+  observerOptions
+);
+
+elementsToAnimateOnScroll.forEach((element) => {
+  animationObserver.observe(element);
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const timelineLinks = document.querySelectorAll(".vertical-timeline a");
+  const chapters = document.querySelectorAll('[id^="chapter"]');
+
+  // Smooth scroll for timeline links
+  timelineLinks.forEach((link) => {
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+      const targetId = this.getAttribute("href");
+      const targetElement = document.querySelector(targetId);
+      if (targetElement) {
+        // Calculate the target scroll position relative to the document top
+        const targetPosition =
+          targetElement.getBoundingClientRect().top + window.scrollY;
+        // Update the targetScrollY of your custom smooth scroll
+        targetScrollY = targetPosition;
+        // The custom smoothScrollLoop will now handle scrolling to this position
       }
+    });
+  });
 
-      slider.addEventListener("input", () => {
-        const currentIndex = parseInt(slider.value);
+  // Highlight active timeline link on scroll
+  const observerOptions = {
+    root: null, // relative to document viewport
+    rootMargin: "0px",
+    threshold: 0.5, // 50% of the element is visible
+  };
 
-        slides.forEach((slide, i) => {
-          // Réinitialiser les classes et styles spécifiques à la position active
-          slide.classList.remove("active", "inactive");
-          slide.style.removeProperty("--left");
-          slide.style.removeProperty("--bottom");
-          slide.style.removeProperty("--angle");
-          slide.style.top = ""; // Réinitialiser le style 'top' inline
-          slide.style.left = ""; // Réinitialiser le style 'left' inline
+  const observerCallback = (entries, observer) => {
+    entries.forEach((entry) => {
+      const correspondingLink = document.querySelector(
+        `.vertical-timeline a[href="#${entry.target.id}"]`
+      );
+      if (entry.isIntersecting) {
+        // Remove active class from all links
+        timelineLinks.forEach((link) => link.classList.remove("active"));
+        // Add active class to the current link
+        if (correspondingLink) {
+          correspondingLink.classList.add("active");
+        }
+      } else {
+        if (correspondingLink) {
+          correspondingLink.classList.remove("active");
+        }
+      }
+    });
+  };
 
-          if (i === currentIndex) {
-            // Appliquer le style actif
-            slide.style.setProperty("--left", positions[i].left);
-            slide.style.setProperty("--bottom", positions[i].bottom);
-            slide.style.setProperty("--angle", positions[i].angle);
-            slide.classList.add("active");
-          } else if (i < currentIndex) {
-            // Appliquer le style inactif pour les images précédentes
-            slide.classList.add("inactive");
+  const observer = new IntersectionObserver(observerCallback, observerOptions);
 
-            if (i === 0) {
-              // Première image inactive : coin supérieur gauche
-              slide.style.top = '20px';
-              slide.style.left = '20px';
-              // Assurez-vous que 'right' n'est pas défini si vous l'utilisiez ailleurs
-              slide.style.right = 'auto';
-            } else if (i === 1) {
-              // Deuxième image inactive : coin supérieur droit
-              slide.style.top = '20px';
-              // Positionner près du bord droit. Ajustez '120px' selon la taille souhaitée ou utilisez un pourcentage.
-              slide.style.left = 'calc(100% - 120px)';
-              slide.style.right = 'auto'; // Alternative: slide.style.right = '20px'; slide.style.left = 'auto';
-            } else {
-              // Autres images inactives : position aléatoire dans la partie supérieure
-              const randomTop = 15 + Math.random() * 50; // Position top aléatoire entre 15px et 65px
-              const randomLeft = 10 + Math.random() * 80; // Position left aléatoire entre 10% et 90%
-              slide.style.top = `${randomTop}px`;
-              slide.style.left = `${randomLeft}%`;
-              slide.style.right = 'auto';
-            }
-          }
-          // Les images avec i > currentIndex n'ont aucune classe ajoutée,
-          // elles utiliseront donc le style .slide par défaut (caché).
-        });
-      });
-
-      // Appeler l'initialisation au chargement
-      initializeSlider();
+  chapters.forEach((chapter) => {
+    observer.observe(chapter);
+  });
+});
